@@ -1,6 +1,6 @@
 # Jacked
 
-TODO: Write a gem description
+The gem that gets information from audio files.
 
 ## Installation
 
@@ -18,12 +18,32 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+To initialize write:
 
-## Contributing
+```ruby
+jacked = Jacked.create("path/to/file")
+```
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+to get the file_type
+
+```ruby
+jacked.file_type #=> audio
+```
+
+to get the file_format
+
+```ruby
+jacked.file_format #=> mp3, wav, etc...
+```
+
+to get the duration
+
+```ruby
+jacked.duration #=> in seconds. eg.: 234
+```
+
+to get the waveform (in json format)
+
+```ruby
+jacked.waveform #=> get a json with: width, height and data
+```
