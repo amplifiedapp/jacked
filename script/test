@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+
+if [ $# -gt 0 ]; then # we have args
+  filename=$1
+  # Remove trailing line number from filename, e.g. spec/my_spec.rb:33
+  grep_filename=`echo $1 | sed 's/:.*$//g'`
+
+  (set +e; grep -r 'spec_helper' $grep_filename) > /dev/null
+  if [ $? -eq 1 ]; then # no match. we have a stand alone spec
+    need_rails=''
+  fi
+else
+  filename='spec'
+fi
+
+command='bundle exec rspec'
+
+$command $filename
