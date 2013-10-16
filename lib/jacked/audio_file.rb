@@ -1,6 +1,7 @@
 require 'json'
 require 'waveformjson'
 require 'securerandom'
+require 'tempfile'
 
 module Jacked
   class InvalidFile < StandardError; end
@@ -9,9 +10,14 @@ module Jacked
     attr_reader :file_type, :file_format, :duration
 
     def initialize(options)
-      raise InvalidFile.new("Missing filename") unless options[:file]
-
       begin
+        if options[:content]
+          tmp_filename = _generate_temp_file(options[:content])
+          options[:file] = tmp_filename
+        end
+
+        raise InvalidFile.new("Missing filename") unless options[:file]
+
         @filename = options[:file]
         File.open(@filename)
       rescue Exception
@@ -32,6 +38,12 @@ module Jacked
     end
 
     private
+
+    def _generate_temp_file(content)
+      temp_file = Tempfile.new("temp_audio")
+      temp_file.write(content)
+      temp_file.path
+    end
 
     def _get_temp_wav_file(filename)
       temp_wav = "/tmp/#{SecureRandom.hex}.wav"
