@@ -1,6 +1,7 @@
 require 'json'
 require 'waveformjson'
 require 'securerandom'
+require 'tempfile'
 
 module Jacked
   class InvalidFile < StandardError; end
@@ -39,11 +40,9 @@ module Jacked
     private
 
     def _generate_temp_file(content)
-      temp_file = "/tmp/#{SecureRandom.hex}.mp3"
-      f = File.new(temp_file, "w")
-      f.write(content)
-      f.close()
-      temp_file
+      temp_file = Tempfile.new("temp_audio")
+      temp_file.write(content)
+      temp_file.path
     end
 
     def _get_temp_wav_file(filename)

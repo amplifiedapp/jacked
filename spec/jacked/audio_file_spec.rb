@@ -78,7 +78,7 @@ describe Jacked::AudioFile do
         expect(subject).to_not be_nil
       end
 
-      it "sets te width to 1800" do
+      it "sets the width to 1800" do
         expect(subject["width"]).to eq 1800
       end
 
@@ -99,7 +99,7 @@ describe Jacked::AudioFile do
         expect(subject).to_not be_nil
       end
 
-      it "sets te width to 1800" do
+      it "sets the width to 1800" do
         expect(subject["width"]).to eq 1800
       end
 
@@ -120,7 +120,7 @@ describe Jacked::AudioFile do
         expect(subject).to_not be_nil
       end
 
-      it "sets te width to 1800" do
+      it "sets the width to 1800" do
         expect(subject["width"]).to eq 1800
       end
 
