@@ -56,7 +56,7 @@ module Jacked
 
     def _generate_waveform(filename)
       waveform = Waveformjson.generate(filename)
-      json_waveform = {width: 1800, height: 140, data: waveform }
+      json_waveform = {width: 1800, height: 1, data: waveform }
       JSON.generate(json_waveform)
     end
 

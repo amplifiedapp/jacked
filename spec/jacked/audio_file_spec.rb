@@ -82,8 +82,8 @@ describe Jacked::AudioFile do
         expect(subject["width"]).to eq 1800
       end
 
-      it "sets the height to 140" do
-        expect(subject["height"]).to eq 140
+      it "sets the height to 1" do
+        expect(subject["height"]).to eq 1
       end
 
       it "sets the data array" do
@@ -103,8 +103,8 @@ describe Jacked::AudioFile do
         expect(subject["width"]).to eq 1800
       end
 
-      it "sets the height to 140" do
-        expect(subject["height"]).to eq 140
+      it "sets the height to 1" do
+        expect(subject["height"]).to eq 1
       end
 
       it "sets the data array" do
@@ -124,8 +124,8 @@ describe Jacked::AudioFile do
         expect(subject["width"]).to eq 1800
       end
 
-      it "sets the height to 140" do
-        expect(subject["height"]).to eq 140
+      it "sets the height to 1" do
+        expect(subject["height"]).to eq 1
       end
 
       it "sets the data array" do
