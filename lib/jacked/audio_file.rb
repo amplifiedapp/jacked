@@ -27,14 +27,16 @@ module Jacked
       _parse_metadata(options[:file])
     end
 
-    def waveform
+    def waveform(height=140)
       if "wav".eql? file_format
         filename = @filename
       else
-        filename = _get_temp_wav_file(@filename)
+        temp_wav = Tempfile.new("wav_audio")
+        temp_wav.write(_get_temp_wav_file(@filename))
+        filename = temp_wav.path
       end
 
-      _generate_waveform(filename)
+      _generate_waveform(filename, height)
     end
 
     private
@@ -45,18 +47,21 @@ module Jacked
       temp_file.path
     end
 
-    def _get_temp_wav_file(filename)
-      temp_wav = "/tmp/#{SecureRandom.hex}.wav"
+    def _get_temp_wav_file(mp3_filename)
+      internal_temp_wav = "/tmp/#{SecureRandom.hex}.wav"
       command = <<-end_command
-        ffmpeg -v quiet -i #{filename} #{temp_wav}
+        ffmpeg -v quiet -i #{mp3_filename} #{internal_temp_wav}
       end_command
       IO.popen(command) {}
-      temp_wav
+      content_temp_wav = File.read(internal_temp_wav)
+      File.delete(internal_temp_wav)
+      content_temp_wav
     end
 
-    def _generate_waveform(filename)
+    def _generate_waveform(filename, height)
       waveform = Waveformjson.generate(filename)
-      json_waveform = {width: 1800, height: 1, data: waveform }
+      waveform.map! {|elem| (elem * height).to_i } if height > 1
+      json_waveform = {width: 1800, height: height, data: waveform }
       JSON.generate(json_waveform)
     end
 
