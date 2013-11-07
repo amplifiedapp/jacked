@@ -24,7 +24,7 @@ module Jacked
         raise InvalidFile.new("Invalid audio file")
       end
 
-      _parse_metadata(options[:file])
+      _parse_metadata
     end
 
     def waveform(height=140)
@@ -46,14 +46,17 @@ module Jacked
 
     def reduce
       internal_temp_reduced = Tempfile.new("temp_reduced")
-      internal_temp_reduced.write(`lame -m j --quiet #{@filename} -`)
-      internal_temp_reduced.rewind
 
-      Jacked.create(content: internal_temp_reduced.read)
-
-      # internal_temp_reduced = "/tmp/#{SecureRandom.hex}.mp3"
-      # `lame -m j --quiet #{@filename} #{internal_temp_reduced}`
-      # Jacked.create(file: internal_temp_reduced)
+      begin
+        options = "-m j --quiet"
+        options += " --mp3input" if @file_format.eql? "mp3"
+        internal_temp_reduced.write(`lame #{options} #{@filename} -`)
+        internal_temp_reduced.rewind
+        jacked = Jacked.create(content: internal_temp_reduced.read)
+      ensure
+        internal_temp_reduced.close
+        internal_temp_reduced.unlink
+      end
     end
 
     private
@@ -83,15 +86,8 @@ module Jacked
       JSON.generate(json_waveform)
     end
 
-    def _parse_metadata(filename)
-      command = <<-end_command
-        ffprobe -v quiet -print_format json -show_streams #{filename}
-      end_command
-
-      str_json = ""
-      IO.popen(command) do |io|
-          str_json = io.read
-      end
+    def _parse_metadata
+      str_json = `ffprobe -v quiet -print_format json -show_streams #{@filename}`
 
       json = JSON.parse(str_json)
 

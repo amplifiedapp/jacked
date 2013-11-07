@@ -3,9 +3,9 @@ require 'spec_helper'
 describe Jacked::AudioFile do
   let(:mp3_filename) { "#{File.expand_path('../../', __FILE__)}/files/test.mp3" }
   let(:wav_filename) { "#{File.expand_path('../../', __FILE__)}/files/test.wav" }
-  let(:mp3_reduced_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_reduced.mp3" }
-  let(:mp3_reduced_from_wav_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_reduced_wav.mp3" }
-  let(:content_string) { File.open(mp3_filename).read() }
+  let(:mp3_reduced_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_mp3_reduced.mp3" }
+  let(:mp3_reduced_from_wav_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_wav_reduced.mp3" }
+  let(:content_string) { File.read(mp3_filename) }
   let(:mp3_jacked) { Jacked.create(file: mp3_filename) }
   let(:wav_jacked) { Jacked.create(file: wav_filename) }
   let(:content_jacked) { Jacked.create(content: content_string) }
@@ -234,26 +234,32 @@ describe Jacked::AudioFile do
     end
   end
 
-  # describe "#reduce" do
-  #   context "with a wav file" do
-  #     subject { wav_jacked.reduce }
+  describe "#reduce" do
+    context "with a wav file" do
+      subject { wav_jacked.reduce }
 
-  #     it 'returns a reduced jacked audio file' do
-  #       file_content = File.read(mp3_reduced_from_wav_filename).encode('UTF-16', 'UTF-8', invalid: :replace)
-  #       expect(subject.content.encode('UTF-16', 'UTF-8', invalid: :replace)).to eq file_content
-  #     end
-  #   end
+      it 'returns a reduced jacked audio file' do
+        file_content = File.read(mp3_reduced_from_wav_filename).encode('UTF-16', 'UTF-8', invalid: :replace)
+        expect(subject.content.encode('UTF-16', 'UTF-8', invalid: :replace)).to eq file_content
+      end
+    end
 
-  #   context "with a mp3 file" do
-  #     subject { mp3_jacked.reduce }
+    context "with a mp3 file" do
+      subject { mp3_jacked.reduce }
 
-  #     it 'returns a reduced jacked audio file'
-  #   end
+      it 'returns a reduced jacked audio file' do
+        file_content = File.read(mp3_reduced_filename).encode('UTF-16', 'UTF-8', invalid: :replace)
+        expect(subject.content.encode('UTF-16', 'UTF-8', invalid: :replace)).to eq file_content
+      end
+    end
 
-  #   context "with a content string" do
-  #     subject { content.reduce }
+    context "with a content string" do
+      subject { content_jacked.reduce }
 
-  #     it 'returns a reduced jacked audio file'
-  #   end
-  # end
+      it 'returns a reduced jacked audio file' do
+        file_content = File.read(mp3_reduced_filename).encode('UTF-16', 'UTF-8', invalid: :replace)
+        expect(subject.content.encode('UTF-16', 'UTF-8', invalid: :replace)).to eq file_content
+      end
+    end
+  end
 end
