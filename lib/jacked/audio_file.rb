@@ -33,10 +33,27 @@ module Jacked
       else
         temp_wav = Tempfile.new("wav_audio")
         temp_wav.write(_get_temp_wav_file(@filename))
+        temp_wav.rewind
         filename = temp_wav.path
       end
 
       _generate_waveform(filename, height)
+    end
+
+    def content
+      File.read(@filename)
+    end
+
+    def reduce
+      internal_temp_reduced = Tempfile.new("temp_reduced")
+      internal_temp_reduced.write(`lame -m j --quiet #{@filename} -`)
+      internal_temp_reduced.rewind
+
+      Jacked.create(content: internal_temp_reduced.read)
+
+      # internal_temp_reduced = "/tmp/#{SecureRandom.hex}.mp3"
+      # `lame -m j --quiet #{@filename} #{internal_temp_reduced}`
+      # Jacked.create(file: internal_temp_reduced)
     end
 
     private
@@ -44,6 +61,7 @@ module Jacked
     def _generate_temp_file(content)
       temp_file = Tempfile.new("temp_audio")
       temp_file.write(content)
+      temp_file.rewind
       temp_file.path
     end
 
