@@ -28,16 +28,13 @@ module Jacked
     end
 
     def waveform(height=140)
-      if "wav".eql? file_format
-        filename = @filename
-      else
-        temp_wav = Tempfile.new("wav_audio")
-        temp_wav.write(_get_temp_wav_file(@filename))
-        temp_wav.rewind
-        filename = temp_wav.path
-      end
+      filename = if "wav".eql? file_format
+                   @filename
+                 else
+                   wav_content(@filename).path
+                 end
 
-      _generate_waveform(filename, height)
+      generate_waveform(filename, height)
     end
 
     def content
@@ -50,7 +47,7 @@ module Jacked
       begin
         options = "-m j --quiet"
         options += " --mp3input" if @file_format.eql? "mp3"
-        internal_temp_reduced.write(`lame #{options} #{@filename} -`)
+        `lame #{options} #{@filename} #{internal_temp_reduced.path}`
         internal_temp_reduced.rewind
         jacked = Jacked.create(content: internal_temp_reduced.read)
       ensure
@@ -68,18 +65,15 @@ module Jacked
       temp_file.path
     end
 
-    def _get_temp_wav_file(mp3_filename)
-      internal_temp_wav = "/tmp/#{SecureRandom.hex}.wav"
-      command = <<-end_command
-        ffmpeg -v quiet -i #{mp3_filename} #{internal_temp_wav}
-      end_command
-      IO.popen(command) {}
-      content_temp_wav = File.read(internal_temp_wav)
-      File.delete(internal_temp_wav)
-      content_temp_wav
+    def wav_content(mp3_filename)
+      internal_temp_wav = Tempfile.open("temp_wav")
+      internal_temp_wav.close
+      `ffmpeg -v quiet -i #{mp3_filename} -y -f wav #{internal_temp_wav.path}`
+      internal_temp_wav.open
+      internal_temp_wav
     end
 
-    def _generate_waveform(filename, height)
+    def generate_waveform(filename, height)
       waveform = Waveformjson.generate(filename)
       waveform.map! {|elem| (elem * height).to_i } if height > 1
       json_waveform = {width: 1800, height: height, data: waveform }
