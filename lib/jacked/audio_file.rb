@@ -12,7 +12,7 @@ module Jacked
     def initialize(options)
       begin
         if options[:content]
-          tmp_filename = _generate_temp_file(options[:content])
+          tmp_filename = generate_temp_file(options[:content])
           options[:file] = tmp_filename
         end
 
@@ -24,51 +24,58 @@ module Jacked
         raise InvalidFile.new("Invalid audio file")
       end
 
-      _parse_metadata(options[:file])
+      parse_metadata
     end
 
-    def waveform
-      if "wav".eql? file_format
-        filename = @filename
-      else
-        filename = _get_temp_wav_file(@filename)
-      end
+    def waveform(height=140)
+      filename = if "wav".eql? file_format
+                   @filename
+                 else
+                   internal_temp_wav = Tempfile.new("temp_wav").path
+                   `ffmpeg -v quiet -i #{@filename} -y -f wav #{internal_temp_wav}`
+                   internal_temp_wav
+                 end
 
-      _generate_waveform(filename)
+      generate_waveform(filename, height)
+    end
+
+    def content
+      File.read(@filename)
+    end
+
+    def reduce
+      internal_temp_reduced = Tempfile.new("temp_reduced")
+
+      begin
+        options = "-m j --quiet"
+        options += " --mp3input" if @file_format.eql? "mp3"
+        `lame #{options} #{@filename} #{internal_temp_reduced.path}`
+        internal_temp_reduced.rewind
+        jacked = Jacked.create(content: internal_temp_reduced.read)
+      ensure
+        internal_temp_reduced.close
+        internal_temp_reduced.unlink
+      end
     end
 
     private
 
-    def _generate_temp_file(content)
+    def generate_temp_file(content)
       temp_file = Tempfile.new("temp_audio")
       temp_file.write(content)
+      temp_file.rewind
       temp_file.path
     end
 
-    def _get_temp_wav_file(filename)
-      temp_wav = "/tmp/#{SecureRandom.hex}.wav"
-      command = <<-end_command
-        ffmpeg -v quiet -i #{filename} #{temp_wav}
-      end_command
-      IO.popen(command) {}
-      temp_wav
-    end
-
-    def _generate_waveform(filename)
+    def generate_waveform(filename, height)
       waveform = Waveformjson.generate(filename)
-      json_waveform = {width: 1800, height: 1, data: waveform }
+      waveform.map! {|elem| (elem * height).to_i } if height > 1
+      json_waveform = {width: 1800, height: height, data: waveform }
       JSON.generate(json_waveform)
     end
 
-    def _parse_metadata(filename)
-      command = <<-end_command
-        ffprobe -v quiet -print_format json -show_streams #{filename}
-      end_command
-
-      str_json = ""
-      IO.popen(command) do |io|
-          str_json = io.read
-      end
+    def parse_metadata
+      str_json = `ffprobe -v quiet -print_format json -show_streams #{@filename}`
 
       json = JSON.parse(str_json)
 
