@@ -12,7 +12,7 @@ module Jacked
     def initialize(options)
       begin
         if options[:content]
-          tmp_filename = _generate_temp_file(options[:content])
+          tmp_filename = generate_temp_file(options[:content])
           options[:file] = tmp_filename
         end
 
@@ -24,14 +24,16 @@ module Jacked
         raise InvalidFile.new("Invalid audio file")
       end
 
-      _parse_metadata
+      parse_metadata
     end
 
     def waveform(height=140)
       filename = if "wav".eql? file_format
                    @filename
                  else
-                   wav_content(@filename).path
+                   internal_temp_wav = Tempfile.new("temp_wav").path
+                   `ffmpeg -v quiet -i #{@filename} -y -f wav #{internal_temp_wav}`
+                   internal_temp_wav
                  end
 
       generate_waveform(filename, height)
@@ -58,19 +60,11 @@ module Jacked
 
     private
 
-    def _generate_temp_file(content)
+    def generate_temp_file(content)
       temp_file = Tempfile.new("temp_audio")
       temp_file.write(content)
       temp_file.rewind
       temp_file.path
-    end
-
-    def wav_content(mp3_filename)
-      internal_temp_wav = Tempfile.open("temp_wav")
-      internal_temp_wav.close
-      `ffmpeg -v quiet -i #{mp3_filename} -y -f wav #{internal_temp_wav.path}`
-      internal_temp_wav.open
-      internal_temp_wav
     end
 
     def generate_waveform(filename, height)
@@ -80,7 +74,7 @@ module Jacked
       JSON.generate(json_waveform)
     end
 
-    def _parse_metadata
+    def parse_metadata
       str_json = `ffprobe -v quiet -print_format json -show_streams #{@filename}`
 
       json = JSON.parse(str_json)
