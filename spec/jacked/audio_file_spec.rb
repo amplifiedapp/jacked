@@ -206,6 +206,16 @@ describe Jacked::AudioFile do
         end
       end
     end
+
+    context 'calling it after content' do
+      it 'returns the waveform data' do
+        jacked = Jacked.create(content: content_string)
+        jacked.content
+        resp = JSON.parse(jacked.waveform)
+        expect(resp["data"]).to_not be_nil
+        expect(resp["data"]).to eq mp3_jacked_waveform140
+      end
+    end
   end
 
   describe "#content" do
