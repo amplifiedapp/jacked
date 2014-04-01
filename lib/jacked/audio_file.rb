@@ -65,6 +65,33 @@ module Jacked
       end
     end
 
+    def split(ranges)
+      temp_file = generate_temp_file
+      files = []
+      begin
+        ranges.each do |range|
+          internal_temp_splitted = Tempfile.new("temp_splitted")
+          start = range[0]
+          duration = range[1] - start
+          input_options = "-ss #{start} "
+          input_options += " -f mp3" if @file_format.eql? "mp3"
+          input_options += " -i #{temp_file.path}"
+          output_options = " -t #{duration} -f mp3 -y"
+          output_options += " #{internal_temp_splitted.path}"
+          begin
+            `ffmpeg #{input_options} #{output_options}`
+            internal_temp_splitted.rewind
+            files << Jacked.create(content: internal_temp_splitted.read)
+          ensure
+            internal_temp_splitted.close!
+          end
+        end
+      ensure
+        temp_file.close!
+      end
+      files
+    end
+
     private
 
     def generate_temp_file
