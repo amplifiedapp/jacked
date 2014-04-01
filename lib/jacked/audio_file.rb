@@ -79,7 +79,7 @@ module Jacked
           output_options = " -t #{duration} -f mp3 -y"
           output_options += " #{internal_temp_splitted.path}"
           begin
-            `ffmpeg #{input_options} #{output_options}`
+            `ffmpeg -v quiet #{input_options} #{output_options}`
             internal_temp_splitted.rewind
             files << Jacked.create(content: internal_temp_splitted.read)
           ensure
