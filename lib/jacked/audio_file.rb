@@ -92,6 +92,24 @@ module Jacked
       files
     end
 
+    def find_silences
+      temp_file = generate_temp_file
+      begin
+        options = " -af silencedetect=n=-25dB:d=1 -v info -f null - 2>&1 | grep silencedetect"
+        output = `ffmpeg -i #{generate_temp_file.path} #{options}`
+        puts " ============================================================================= "
+        output.each_line do |line|
+          puts " --- "
+          puts line
+          puts " --- "
+        end
+        puts " ============================================================================= "
+      ensure
+        temp_file.close!
+      end
+      []
+    end
+
     private
 
     def generate_temp_file

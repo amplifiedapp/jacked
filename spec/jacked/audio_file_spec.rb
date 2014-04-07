@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Jacked::AudioFile do
   let(:mp3_filename) { "#{File.expand_path('../../', __FILE__)}/files/test.mp3" }
   let(:mp3_song_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_song.mp3"}
+  let(:mp3_silence_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_silence.mp3"}
   let(:wav_filename) { "#{File.expand_path('../../', __FILE__)}/files/test.wav" }
   let(:aif_filename) { "#{File.expand_path('../../', __FILE__)}/files/test.aif" }
   let(:mp3_reduced_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_mp3_reduced.mp3" }
@@ -11,6 +12,7 @@ describe Jacked::AudioFile do
   let(:content_string) { File.read(mp3_filename) }
   let(:mp3_jacked) { Jacked.create(file: mp3_filename) }
   let(:mp3_song_jacked) { Jacked.create(file: mp3_song_filename) }
+  let(:mp3_silence_jacked) { Jacked.create(file: mp3_silence_filename) }
   let(:wav_jacked) { Jacked.create(file: wav_filename) }
   let(:aif_jacked) { Jacked.create(file: aif_filename) }
   let(:content_jacked) { Jacked.create(content: content_string) }
@@ -368,6 +370,24 @@ describe Jacked::AudioFile do
       it 'the length should be 5 seconds each' do
         subject.each do |part|
           expect(part.duration).to eq 5
+        end
+      end
+    end
+  end
+
+  describe "#find_silences" do
+    context "with a mp3 file" do
+      subject { mp3_silence_jacked.find_silences }
+
+      it 'returns an array' do
+        expect(subject.length).to eq 3
+      end
+
+      it 'returns a subarray of position and length of silence for every array position' do
+        subject.each do |part|
+          expect(part.length).to eq 2
+          expect(part[0]).to_not be_nil
+          expect(part[1]).to_not be_nil
         end
       end
     end
