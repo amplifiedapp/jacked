@@ -90,12 +90,12 @@ module Jacked
         @metadata = json['streams'][0]
         @file_type = @metadata['codec_type']
 
-        raise InvalidFile.new("Not an audio file") if file_type != "audio"
+        raise InvalidFile.new("Not an audio file - JSON was: #{str_json}") if file_type != "audio"
 
         @file_format = _get_format(@metadata['codec_name'])
         @duration = @metadata['duration'].to_f.round
       rescue
-        raise InvalidFile.new("Not an audio file")
+        raise InvalidFile.new("Not an audio file - JSON was: #{str_json}")
       ensure
         tmp_file.close!
       end
