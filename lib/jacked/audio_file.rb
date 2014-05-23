@@ -83,19 +83,23 @@ module Jacked
     def parse_metadata
       tmp_file = generate_temp_file
       begin
-        str_json = `ffprobe -v quiet -print_format json -show_streams #{tmp_file.path}`
+        str = `ffprobe -v quiet -show_streams #{tmp_file.path}`
 
-        json = JSON.parse(str_json)
+        metadata = {}
+        str.split.each do |element|
+          key_value = element.split("=")
+          next if key_value.size < 1
+          metadata[key_value[0]] = key_value[1]
+        end
 
-        @metadata = json['streams'][0]
-        @file_type = @metadata['codec_type']
+        @file_type = metadata['codec_type']
 
-        raise InvalidFile.new("Not an audio file - JSON was: #{str_json}") if file_type != "audio"
+        raise InvalidFile.new("Not an audio file - ffprobe was: #{str}") if file_type != "audio"
 
-        @file_format = _get_format(@metadata['codec_name'])
-        @duration = @metadata['duration'].to_f.round
+        @file_format = _get_format(metadata['codec_name'])
+        @duration = metadata['duration'].to_f.round
       rescue
-        raise InvalidFile.new("Not an audio file - JSON was: #{str_json}")
+        raise InvalidFile.new("Not an audio file - ffprobe was: #{str}")
       ensure
         tmp_file.close!
       end
