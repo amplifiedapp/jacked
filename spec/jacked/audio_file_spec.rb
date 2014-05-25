@@ -48,25 +48,25 @@ describe Jacked::AudioFile do
   describe "#file_format" do
     context "with a mp3 file" do
       it "sets the file_format to mp3" do
-        expect(mp3_jacked.file_format).to eq "mp3"
+        expect(mp3_jacked.file_format).to eq :mp3
       end
     end
 
     context "with a wav file" do
       it "sets the file_format to wav" do
-        expect(wav_jacked.file_format).to eq "wav"
+        expect(wav_jacked.file_format).to eq :wav
       end
     end
 
     context "with an aif file" do
       it "sets the file_format to aif" do
-        expect(aif_jacked.file_format).to eq "aif"
+        expect(aif_jacked.file_format).to eq :aif
       end
     end
 
     context "with a content string" do
       it "sets the file_format to mp3" do
-        expect(content_jacked.file_format).to eq "mp3"
+        expect(content_jacked.file_format).to eq :mp3
       end
     end
   end
