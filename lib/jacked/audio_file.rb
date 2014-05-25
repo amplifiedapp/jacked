@@ -29,7 +29,8 @@ module Jacked
     def waveform(height=140)
       begin
         internal_temp_wav = Tempfile.new("temp_wav")
-        if "wav".eql? file_format
+        case file_format
+        when "wav"
           internal_temp_wav.write(@content)
           internal_temp_wav.rewind
         else
@@ -108,6 +109,7 @@ module Jacked
     def _get_format(codec_name)
       return "mp3" if "mp3".eql? codec_name
       return "wav" if "pcm_s16le".eql? codec_name
+      return "aif" if "pcm_s16be".eql? codec_name
     end
   end
 end
