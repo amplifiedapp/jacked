@@ -30,7 +30,7 @@ module Jacked
       begin
         internal_temp_wav = Tempfile.new("temp_wav")
         case file_format
-        when "wav"
+        when :wav
           internal_temp_wav.write(@content)
           internal_temp_wav.rewind
         else
