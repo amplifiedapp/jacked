@@ -14,8 +14,6 @@ describe Jacked::AudioFile do
   let(:content_jacked) { Jacked.create(content: content_string) }
   let(:wav_jacked_waveform1) { JSON.parse(File.read(File.expand_path('../../',__FILE__) + "/files/test.wav.waveform.json")) }
   let(:wav_jacked_waveform140) { JSON.parse(File.read(File.expand_path('../../',__FILE__) + "/files/test.wav.waveform140.json")) }
-  let(:mp3_jacked_waveform1) { JSON.parse(File.read(File.expand_path('../../',__FILE__) + "/files/test.mp3.waveform.json")) }
-  let(:mp3_jacked_waveform140) { JSON.parse(File.read(File.expand_path('../../',__FILE__) + "/files/test.mp3.waveform140.json")) }
   let(:aif_jacked_waveform1) { JSON.parse(File.read(File.expand_path('../../', __FILE__) + "/files/test.aif.waveform.json")) }
   let(:aif_jacked_waveform140) { JSON.parse(File.read(File.expand_path('../../', __FILE__) + "/files/test.aif.waveform140.json")) }
 
