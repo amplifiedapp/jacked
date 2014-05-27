@@ -2,6 +2,8 @@
 
 The gem that gets information from audio files.
 
+[![Build Status](https://travis-ci.org/amplifiedapp/jacked.svg?branch=master)](https://travis-ci.org/amplifiedapp/jacked)
+
 ## Installation
 
 Add this line to your application's Gemfile:
