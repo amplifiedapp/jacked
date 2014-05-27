@@ -1,0 +1,10 @@
+language: ruby
+rvm:
+  - 2.0.0-p247
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y lame
+  - sudo apt-get install ffmpeg
+  - sudo apt-get install libsndfile1
+  - sudo apt-get install libsndfile1-dev
+
