@@ -361,15 +361,20 @@ describe Jacked::AudioFile do
 
   describe "#split" do
     context "with a mp3 file" do
-      subject { mp3_song_jacked.split([[0,5],[5,10],[10,15]]) }
+      context "with start time and end time" do
+        subject { mp3_song_jacked.split([{start: 0, end: 5},
+                                         {start: 5, end: 10},
+                                         {start: 10, end: 15}]) }
 
-      it 'returns an array of mp3' do
-        expect(subject.length).to eq 3
-      end
+        it 'returns an array of mp3' do
+          expect(subject.length).to eq 3
+        end
 
-      it 'the length should be 5 seconds each' do
-        subject.each do |part|
-          expect(part.duration).to eq 5
+        it 'the length should be 5 seconds each' do
+          expect(subject.size).to eq 3
+          subject.each do |part|
+            expect(part.duration).to eq 5
+          end
         end
       end
     end
@@ -383,11 +388,16 @@ describe Jacked::AudioFile do
         expect(subject.length).to eq 3
       end
 
-      it 'returns a subarray of position and length of silence for every array position' do
+      it 'returns a hash for every array position' do
         subject.each do |part|
-          expect(part.length).to eq 2
-          expect(part[0]).to_not be_nil
-          expect(part[1]).to_not be_nil
+          expect(part.size).to eq 2
+        end
+      end
+
+      it 'returns a hash with a silence_start and silence_end keys' do
+        subject.each do |part|
+          expect(part).to have_key 'silence_start'
+          expect(part).to have_key 'silence_end'
         end
       end
     end

@@ -9,6 +9,8 @@ module Jacked
   class AudioFile
     attr_reader :file_type, :file_format, :duration
 
+    SILENCE_REGEXP = /(silence_end: \d+.\d+) | (silence_start: \d+.\d+)/
+
     def initialize(options)
       begin
         if options[:content]
@@ -71,15 +73,15 @@ module Jacked
       begin
         ranges.each do |range|
           internal_temp_splitted = Tempfile.new("temp_splitted")
-          start = range[0]
-          duration = range[1] - start
-          input_options = "-ss #{start} "
-          input_options += " -f mp3" if @file_format.eql? "mp3"
-          input_options += " -i #{temp_file.path}"
-          output_options = " -t #{duration} -f mp3 -y"
-          output_options += " #{internal_temp_splitted.path}"
+          start = range[:start]
+          end_time = range[:end]
+          options = ""
+          options += " -i #{temp_file.path}"
+          options += " -to #{end_time}"
+          options += " -ss #{start}"
+          options += " -f mp3 -y #{internal_temp_splitted.path}"
           begin
-            `ffmpeg -v quiet #{input_options} #{output_options}`
+            `ffmpeg -v quiet #{options}`
             internal_temp_splitted.rewind
             files << Jacked.create(content: internal_temp_splitted.read)
           ensure
@@ -94,20 +96,26 @@ module Jacked
 
     def find_silences
       temp_file = generate_temp_file
+      silences = []
       begin
         options = " -af silencedetect=n=-25dB:d=1 -v info -f null - 2>&1 | grep silencedetect"
-        output = `ffmpeg -i #{generate_temp_file.path} #{options}`
-        puts " ============================================================================= "
+        output = `ffmpeg -i #{temp_file.path} #{options}`
+        hash_silence = {}
         output.each_line do |line|
-          puts " --- "
-          puts line
-          puts " --- "
+          silence_line = SILENCE_REGEXP.match(line)
+          silence = silence_line[0].split(':')
+
+          hash_silence[silence[0].strip] = silence[1].strip
+          if hash_silence.size == 2
+            # Has both start and end
+            silences << hash_silence
+            hash_silence = {}
+          end
         end
-        puts " ============================================================================= "
       ensure
         temp_file.close!
       end
-      []
+      silences
     end
 
     private
