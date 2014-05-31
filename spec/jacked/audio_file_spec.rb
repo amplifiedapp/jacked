@@ -384,17 +384,17 @@ describe Jacked::AudioFile do
     context "with a mp3 file" do
       subject { mp3_silence_jacked.find_silences }
 
-      it 'returns an array' do
+      xit 'returns an array' do
         expect(subject.length).to eq 3
       end
 
-      it 'returns a hash for every array position' do
+      xit 'returns a hash for every array position' do
         subject.each do |part|
           expect(part.size).to eq 2
         end
       end
 
-      it 'returns a hash with a silence_start and silence_end keys' do
+      xit 'returns a hash with a silence_start and silence_end keys' do
         subject.each do |part|
           expect(part).to have_key 'silence_start'
           expect(part).to have_key 'silence_end'
