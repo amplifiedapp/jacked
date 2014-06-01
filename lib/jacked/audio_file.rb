@@ -96,29 +96,29 @@ module Jacked
       files
     end
 
-    def find_silences
-      temp_file = generate_temp_file
-      silences = []
-      begin
-        options = " -af silencedetect=n=-25dB:d=1 -v info -f null - 2>&1 | grep silencedetect"
-        output = `#{CONVERTER} -i #{temp_file.path} #{options}`
-        hash_silence = {}
-        output.each_line do |line|
-          silence_line = SILENCE_REGEXP.match(line)
-          silence = silence_line[0].split(':')
-
-          hash_silence[silence[0].strip] = silence[1].strip
-          if hash_silence.size == 2
-            # Has both start and end
-            silences << hash_silence
-            hash_silence = {}
-          end
-        end
-      ensure
-        temp_file.close!
-      end
-      silences
-    end
+    # def find_silences
+    #   temp_file = generate_temp_file
+    #   silences = []
+    #   begin
+    #     options = " -af silencedetect=n=-25dB:d=1 -v info -f null - 2>&1 | grep silencedetect"
+    #     output = `#{CONVERTER} -i #{temp_file.path} #{options}`
+    #     hash_silence = {}
+    #     output.each_line do |line|
+    #       silence_line = SILENCE_REGEXP.match(line)
+    #       silence = silence_line[0].split(':')
+    #
+    #       hash_silence[silence[0].strip] = silence[1].strip
+    #       if hash_silence.size == 2
+    #         # Has both start and end
+    #         silences << hash_silence
+    #         hash_silence = {}
+    #       end
+    #     end
+    #   ensure
+    #     temp_file.close!
+    #   end
+    #   silences
+    # end
 
     private
 
