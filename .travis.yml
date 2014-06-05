@@ -4,7 +4,8 @@ rvm:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y lame
-  - sudo apt-get install ffmpeg
+  - sudo apt-get install libav-tools
+  - sudo apt-get install libavcodec-extra-53
   - sudo apt-get install libsndfile1
   - sudo apt-get install libsndfile1-dev
 

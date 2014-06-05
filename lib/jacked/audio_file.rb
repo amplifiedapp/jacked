@@ -9,6 +9,10 @@ module Jacked
   class AudioFile
     attr_reader :file_type, :file_format, :duration
 
+    SILENCE_REGEXP = /(silence_end: \d+.\d+) | (silence_start: \d+.\d+)/
+    CONVERTER = 'avconv'
+    PROBE = 'avprobe'
+
     def initialize(options)
       begin
         if options[:content]
@@ -35,7 +39,7 @@ module Jacked
           internal_temp_wav.rewind
         else
           tmp_file = generate_temp_file
-          `ffmpeg -v quiet -i #{tmp_file.path} -y -f wav #{internal_temp_wav.path}`
+          `#{CONVERTER} -v quiet -i #{tmp_file.path} -y -f wav #{internal_temp_wav.path}`
           tmp_file.close!
         end
 
@@ -65,6 +69,57 @@ module Jacked
       end
     end
 
+    def split(ranges)
+      temp_file = generate_temp_file
+      files = []
+      begin
+        ranges.each do |range|
+          internal_temp_splitted = Tempfile.new("temp_splitted")
+          start = range[:start]
+          duration = range[:end] - start
+          input_options = "-ss #{start} "
+          input_options += " -f mp3" if @file_format.eql? :mp3
+          input_options += " -i #{temp_file.path}"
+          output_options = " -t #{duration} -f mp3 -y "
+          output_options += " #{internal_temp_splitted.path}"
+          begin
+            `#{CONVERTER} -v quiet #{input_options} #{output_options}`
+            internal_temp_splitted.rewind
+            files << Jacked.create(content: internal_temp_splitted.read)
+          ensure
+            internal_temp_splitted.close!
+          end
+        end
+      ensure
+        temp_file.close!
+      end
+      files
+    end
+
+    # def find_silences
+    #   temp_file = generate_temp_file
+    #   silences = []
+    #   begin
+    #     options = " -af silencedetect=n=-25dB:d=1 -v info -f null - 2>&1 | grep silencedetect"
+    #     output = `#{CONVERTER} -i #{temp_file.path} #{options}`
+    #     hash_silence = {}
+    #     output.each_line do |line|
+    #       silence_line = SILENCE_REGEXP.match(line)
+    #       silence = silence_line[0].split(':')
+    #
+    #       hash_silence[silence[0].strip] = silence[1].strip
+    #       if hash_silence.size == 2
+    #         # Has both start and end
+    #         silences << hash_silence
+    #         hash_silence = {}
+    #       end
+    #     end
+    #   ensure
+    #     temp_file.close!
+    #   end
+    #   silences
+    # end
+
     private
 
     def generate_temp_file
@@ -84,7 +139,7 @@ module Jacked
     def parse_metadata
       tmp_file = generate_temp_file
       begin
-        str = `ffprobe -v quiet -show_streams #{tmp_file.path}`
+        str = `#{PROBE} -v quiet -show_streams #{tmp_file.path}`
 
         metadata = {}
         str.split.each do |element|
@@ -95,12 +150,12 @@ module Jacked
 
         @file_type = metadata['codec_type']
 
-        raise InvalidFile.new("Not an audio file - ffprobe was: #{str}") if file_type != "audio"
+        raise InvalidFile.new("Not an audio file - #{PROBE} was: #{str}") if file_type != "audio"
 
         @file_format = _get_format(metadata['codec_name'])
         @duration = metadata['duration'].to_f.round
       rescue
-        raise InvalidFile.new("Not an audio file - ffprobe was: #{str}")
+        raise InvalidFile.new("Not an audio file - #{PROBE} was: #{str}")
       ensure
         tmp_file.close!
       end

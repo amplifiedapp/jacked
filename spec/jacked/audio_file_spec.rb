@@ -2,6 +2,8 @@ require 'spec_helper'
 
 describe Jacked::AudioFile do
   let(:mp3_filename) { "#{File.expand_path('../../', __FILE__)}/files/test.mp3" }
+  let(:mp3_song_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_song.mp3"}
+  let(:mp3_silence_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_silence.mp3"}
   let(:wav_filename) { "#{File.expand_path('../../', __FILE__)}/files/test.wav" }
   let(:aif_filename) { "#{File.expand_path('../../', __FILE__)}/files/test.aif" }
   let(:mp3_reduced_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_mp3_reduced.mp3" }
@@ -9,6 +11,8 @@ describe Jacked::AudioFile do
   let(:mp3_reduced_from_aif_filename) { "#{File.expand_path('../../', __FILE__)}/files/test_aif_reduced.mp3" }
   let(:content_string) { File.read(mp3_filename) }
   let(:mp3_jacked) { Jacked.create(file: mp3_filename) }
+  let(:mp3_song_jacked) { Jacked.create(file: mp3_song_filename) }
+  let(:mp3_silence_jacked) { Jacked.create(file: mp3_silence_filename) }
   let(:wav_jacked) { Jacked.create(file: wav_filename) }
   let(:aif_jacked) { Jacked.create(file: aif_filename) }
   let(:content_jacked) { Jacked.create(content: content_string) }
@@ -351,6 +355,50 @@ describe Jacked::AudioFile do
       it 'returns a reduced jacked audio file' do
         file_content = File.read(mp3_reduced_filename).encode('UTF-16', 'UTF-8', invalid: :replace)
         expect(subject.content.encode('UTF-16', 'UTF-8', invalid: :replace).size).to be > 0
+      end
+    end
+  end
+
+  describe "#split" do
+    context "with a mp3 file" do
+      context "with start time and end time" do
+        subject { mp3_song_jacked.split([{start: 0, end: 5},
+                                         {start: 5, end: 10},
+                                         {start: 10, end: 15}]) }
+
+        it 'returns an array of mp3' do
+          expect(subject.length).to eq 3
+        end
+
+        it 'the length should be 5 seconds each' do
+          expect(subject.size).to eq 3
+          subject.each do |part|
+            expect(part.duration).to eq 5
+          end
+        end
+      end
+    end
+  end
+
+  describe "#find_silences" do
+    context "with a mp3 file" do
+      subject { mp3_silence_jacked.find_silences }
+
+      xit 'returns an array' do
+        expect(subject.length).to eq 3
+      end
+
+      xit 'returns a hash for every array position' do
+        subject.each do |part|
+          expect(part.size).to eq 2
+        end
+      end
+
+      xit 'returns a hash with a silence_start and silence_end keys' do
+        subject.each do |part|
+          expect(part).to have_key 'silence_start'
+          expect(part).to have_key 'silence_end'
+        end
       end
     end
   end
